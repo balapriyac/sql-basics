@@ -1,37 +1,37 @@
-# imports
+# main.py
+
 import sqlite3
 from faker import Faker
 import random
 
 # connect to the db
-db_conn = sqlite3.connect('customer_db.db')
-db_cursor = db_conn.cursor()
+conn = sqlite3.connect('customer_db.db')
+cur = conn.cur()
 
-# create table
-db_cursor.execute('''CREATE TABLE customers (
-                  id INTEGER PRIMARY KEY,
+# create a database table
+cur.execute('''CREATE TABLE customers (
+                  customerID INTEGER PRIMARY KEY,
                   name TEXT,
-                  email TEXT,
                   city TEXT,
-                  job TEXT,
-                  num_orders INTEGER)''')
+                  email TEXT,
+                  num_orders INTEGER,
+                  discount INTEGER DEFAULT 2)''')
 
 
-# create and insert records
+# create a Faker object 
 fake = Faker()
-Faker.seed(20)
-
+Faker.seed(42)
 
 for _ in range(15):
     name = fake.name()
-    domain = fake.domain_name()
     city = fake.city()
-    email = f"{name[:2]}{city}@{domain}"
-    job = fake.job()
+    d = fake.domain_name()
+    email = f"{name[:2]}.{city[:2]}@{d}"
     num_orders = random.choice(range(200))
-    db_cursor.execute('INSERT INTO customers (name, email, city, job, num_orders) VALUES (?,?,?,?,?)', (name,email,city,job,num_orders))
+    db_cursor.execute('INSERT INTO customers (name, city, email, num_orders) \
+    VALUES (?,?,?,?)', (name,city,email,num_orders))
 
-# commit the transaction and close the cursor and db connection
-db_conn.commit()
-db_cursor.close()
-db_conn.close()
+# commit the transaction 
+conn.commit()
+cur.close()
+conn.close()
